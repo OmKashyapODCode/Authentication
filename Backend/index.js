@@ -6,20 +6,26 @@ import {createClient} from "redis";
 dotenv.config();
 await connectDB();
 
+// Initialize Redis connection
 const redisURL = process.env.REDIS_URL;
-if(!redisURL){
+
+// Check if Redis URL is provided in the environment variables
+if (!redisURL) {
     console.log("missing redis url");
-    process.exit(1);
+    process.exit(1); // Stop the server if no Redis URL is found
 }
 
-export const redisClient= createClient({
+// Create a Redis client instance using the provided URL
+export const redisClient = createClient({
     url: redisURL,
-})
+});
 
+// Connect to Redis and handle connection success or errors
 redisClient
-.connect()
-.then(()=> console.log("connected to redis"))
-.catch(console.error);
+    .connect()
+    .then(() => console.log("connected to redis"))
+    .catch(console.error);
+
 
 const app = express();
 
@@ -33,7 +39,6 @@ import userRoutes from './routes/user.js';
 app.use('/api/v1', userRoutes);
 
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`)
 })
