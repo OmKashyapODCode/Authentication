@@ -198,10 +198,8 @@ export const verifyOtp = TryCatch(async(req,res)=>{
             message:"email and otp are required",
         })
     }
-    const sanitizedEmail = sanitize(email);
-    const sanitizedOtp = sanitize(otp);
-
-    const otpKey = `otp:${sanitizedOtp}`;
+    
+    const otpKey = `otp:${email}`;
     const otpDataJson = await redisClient.get(otpKey);
     if(!otpDataJson){
         return res.status(400).json({
@@ -209,13 +207,13 @@ export const verifyOtp = TryCatch(async(req,res)=>{
         })
     }
     const otpData  = JSON.parse(otpDataJson);
-    if(otpData.otp !== sanitizedOtp){
+    if(otpData.otp !== otp){
         return res.status(400).json({
             message:"Invalid OTP"
         })
     }
     await redisClient.del(otpKey);
-    let  user = await User.findOne({email:sanitizedEmail});
+    let  user = await User.findOne({email});
     
     const tokenData = await generateToken(user._id,res);
 
