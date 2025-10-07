@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import crypto, { verify } from "crypto";
 import sendMail from "../config/sendMail.js";
 import { getOtpHtml, getVerifyEmailHtml } from "../config/html.js";
+import { generateToken } from "../config/generateToken.js";
 
 // Register user controller
 export const registerUser = TryCatch(async(req,res) =>{
@@ -214,18 +215,12 @@ export const verifyOtp = TryCatch(async(req,res)=>{
         })
     }
     await redisClient.del(otpKey);
-    const user = await User.findOne({email:sanitizedEmail});
-    if(!user){
-        return res.status(400).json({
-            message: "User not found",
-        })
-    }
-    res.json({
-        message:"Login successful",
-        user:{
-            _id : user._id,
-            name:user.name,
-            email:user.email,
-        }
+    let  user = await User.findOne({email:sanitizedEmail});
+    
+    const tokenData = await generateToken(user._id,res);
+
+    res.status(200).json({
+        message: `welcome ${user.name} , you have logged in successfully`,
+        user,
     })
 })
