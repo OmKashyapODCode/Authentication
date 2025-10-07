@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from "dotenv";
 import connectDB from './config/db.js';
 import {createClient} from "redis";
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 await connectDB();
@@ -31,6 +32,7 @@ const app = express();
 
 //middlewares
 app.use(express.json());
+app.use(cookieParser());
 
 //import routes 
 import userRoutes from './routes/user.js';
