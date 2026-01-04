@@ -1,0 +1,15 @@
+## already done 
+register through email.
+verify email ..
+login - via password 
+2 step verification via - OTP
+log out 
+
+## thinks to be done..
+
+- forget password
+- google login 
+- Change Password (while logged in)
+- Magic Link Login -- Login directly through secure link sent via email (passwordless).
+
+

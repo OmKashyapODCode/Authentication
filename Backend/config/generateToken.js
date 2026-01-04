@@ -13,7 +13,7 @@ export const generateToken= async(id ,res)=> {
         httpOnly : true,
         // secure   : true,// for https
         sameSite : "strict",//no csrf attack
-        maxAge   : 1*60000 // 1 min
+        maxAge   : 20001*60000 // 1 min
     });
 
     res.cookie("refreshToken" , refreshToken, {
