@@ -6,17 +6,27 @@ import userRoutes from "./routes/user.js";
 
 const app = express();
 
-const corsOptions = {
-  origin: "https://odcodeauthentication.netlify.app",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
+const allowedOrigin = "https://odcodeauthentication.netlify.app";
 
-app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", allowedOrigin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
 
-// preflight must use SAME options
-app.options("*", cors(corsOptions));
+  // VERY IMPORTANT: short-circuit OPTIONS
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());
