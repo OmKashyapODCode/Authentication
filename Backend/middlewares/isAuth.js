@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { redisClient } from '../index.js';
+import { redisClient } from "../config/redis.js";
 import { User } from '../models/user.js';
 
 export const isAuth = async (req, res, next) => {

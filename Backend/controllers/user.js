@@ -1,5 +1,5 @@
 import { loginSchema, registerSchema } from "../config/zod.js";
-import { redisClient } from "../index.js";
+import { redisClient } from "../config/redis.js";
 import TryCatch from "../middlewares/tryCatch.js";
 import sanitize from "mongo-sanitize";//-> to prevent from NoSQL injection attacks
 import { User } from "../models/user.js";
