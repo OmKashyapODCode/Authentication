@@ -1,6 +1,7 @@
 import { createClient } from "redis";
 
 let redisClient;
+let connectingPromise;
 
 export const getRedisClient = async () => {
   if (!redisClient) {
@@ -14,7 +15,10 @@ export const getRedisClient = async () => {
   }
 
   if (!redisClient.isOpen) {
-    await redisClient.connect();
+    if (!connectingPromise) {
+      connectingPromise = redisClient.connect();
+    }
+    await connectingPromise;
   }
 
   return redisClient;
