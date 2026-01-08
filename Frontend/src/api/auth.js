@@ -1,41 +1,67 @@
-import axios from 'axios';
+import axios from "axios";
 
+/**
+ * Axios instance for Auth APIs
+ */
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL, // e.g. https://authentication-vl34.vercel.app/api/v1
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
+/**
+ * Response interceptor for automatic token refresh
+ */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+
+    // If access token expired, try refreshing once
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
       try {
-        await axios.post('/api/v1/refresh', {}, { withCredentials: true });
+        await api.post("/refresh");
         return api(originalRequest);
-      } catch (refreshError) {
-        window.location.href = '/login'; 
-        return Promise.reject(refreshError);
+      } catch {
+        // Refresh failed → force login
+        window.location.href = "/login";
+        return Promise.reject(error);
       }
     }
+
     return Promise.reject(error);
   }
 );
 
-export const register = (data) => api.post('/register', data);
+/* ===========================
+   AUTH API METHODS
+=========================== */
 
-export const verifyEmail = (token) => api.post(`/verify/${token}`);
+export const register = (data) =>
+  api.post("/register", data);
 
-export const login = (data) => api.post('/login', data);
+export const verifyEmail = (token) =>
+  api.post(`/verify/${token}`);
 
-export const verifyOtp = (data) => api.post('/verify', data);
+export const login = (data) =>
+  api.post("/login", data);
 
-export const getMyProfile = () => api.get('/me');
+export const verifyOtp = (data) =>
+  api.post("/verify", data);
 
-export const logout = () => api.post('/logout');
+export const getMyProfile = () =>
+  api.get("/me");
 
-export const refresh = () => api.post('/refresh');
+export const logout = () =>
+  api.post("/logout");
+
+export const refresh = () =>
+  api.post("/refresh");
+
+export default api;

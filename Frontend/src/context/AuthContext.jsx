@@ -1,56 +1,55 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getMyProfile, logout as apiLogout } from '../api/auth';
+import { createContext, useContext, useEffect, useState } from "react";
+import { getMyProfile, logout as logoutApi } from "../api/auth";
 
-const AuthContext = createContext();
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Fetch logged-in user (used on app load & after OTP verification)
+   */
   const fetchUser = async () => {
     try {
-      setLoading(true);
       const res = await getMyProfile();
       setUser(res.data.user);
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Logout user
+   */
+  const logout = async (navigate) => {
+    try {
+      await logoutApi();
+    } finally {
+      setUser(null);
+      navigate("/login");
+    }
+  };
+
+  // Run once on app load
   useEffect(() => {
     fetchUser();
   }, []);
 
-  const logout = async (navigate) => {
-    try {
-      await apiLogout();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setUser(null);
-      if (navigate) {
-        navigate('/login');
-      } else {
-        window.location.href = '/login';
-      }
-    }
-  };
-
-  const contextValue = {
-    user,
-    setUser,
-    loading,
-    logout,
-    fetchUser,
-  };
-
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        fetchUser,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);
