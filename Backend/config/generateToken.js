@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken";
-import { redisClient } from "../config/redis.js";
+import { getRedisClient } from "./redis.js";
 
-/**
- * Generate access + refresh token
- */
 export const generateToken = async (id, res) => {
+  const redisClient = await getRedisClient();
+
   const accessToken = jwt.sign(
     { id },
     process.env.JWT_SECRET,
@@ -17,59 +16,50 @@ export const generateToken = async (id, res) => {
     { expiresIn: "7d" }
   );
 
-  // Store refresh token in Redis
   await redisClient.setEx(
     `refresh-token:${id}`,
     7 * 24 * 60 * 60,
     refreshToken
   );
 
-  // Access Token Cookie
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 1 * 60 * 1000 // 1 minute
+    maxAge: 60 * 1000,
   });
 
-  // Refresh Token Cookie
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return { accessToken, refreshToken };
 };
 
-/**
- * Verify refresh token
- */
 export const verifyRefreshToken = async (refreshToken) => {
   try {
-    const decode = jwt.verify(
+    const redisClient = await getRedisClient();
+
+    const decoded = jwt.verify(
       refreshToken,
       process.env.REFRESH_SECRET
     );
 
     const storedToken = await redisClient.get(
-      `refresh-token:${decode.id}`
+      `refresh-token:${decoded.id}`
     );
 
-    if (storedToken === refreshToken) {
-      return decode;
-    }
+    if (storedToken !== refreshToken) return null;
 
-    return null;
+    return decoded;
   } catch {
     return null;
   }
 };
 
-/**
- * Generate new access token using refresh token
- */
 export const generateAccessToken = (id, res) => {
   const accessToken = jwt.sign(
     { id },
@@ -81,13 +71,11 @@ export const generateAccessToken = (id, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 1 * 60 * 1000
+    maxAge: 60 * 1000,
   });
 };
 
-/**
- * Revoke refresh token
- */
 export const revokedRefreshedToken = async (userId) => {
+  const redisClient = await getRedisClient();
   await redisClient.del(`refresh-token:${userId}`);
 };
