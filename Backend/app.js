@@ -7,18 +7,24 @@ import userRoutes from "./routes/user.js";
 const app = express();
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
-  credentials: true
+  origin: "https://odcodeauthentication.netlify.app",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
 
+// preflight must use SAME options
+app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
+
 app.get("/", (req, res) => {
   res.json({
     message: "Authentication API is running",
-    status: "ok"
+    status: "ok",
   });
 });
 
