@@ -17,7 +17,7 @@ import {
 /* ================= REGISTER ================= */
 
 export const registerUser = TryCatch(async (req, res) => {
-  const redisClient = await getRedisClient();
+  const redisClient = await getRedisClient(); // may be null if Redis is unavailable
 
   const sanitizedBody = sanitize(req.body);
   const validation = registerSchema.safeParse(sanitizedBody);
@@ -40,13 +40,19 @@ export const registerUser = TryCatch(async (req, res) => {
   const { name, email, password } = validation.data;
   const rateLimitKey = `register-rate-limit:${req.ip}:${email}`;
 
-  if (await redisClient.get(rateLimitKey)) {
-    return res.status(429).json({
-      message: "Too many requests, please try again later",
-    });
+  // Rate limiting using Redis (only if available)
+  if (redisClient) {
+    const limited = await redisClient.get(rateLimitKey);
+    if (limited) {
+      return res.status(429).json({
+        message: "Too many requests, please try again later",
+      });
+    }
   }
 
-  if (await User.findOne({ email })) {
+  // MongoDB is the source of truth
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
     return res.status(400).json({
       message: "User already exists with this email",
     });
@@ -55,25 +61,30 @@ export const registerUser = TryCatch(async (req, res) => {
   const hashPassword = await bcrypt.hash(password, 10);
   const verifyToken = crypto.randomBytes(32).toString("hex");
 
-  await redisClient.set(
-    `verify:${verifyToken}`,
-    JSON.stringify({ name, email, password: hashPassword }),
-    { EX: 300 }
-  );
+  // Store verification data in Redis if available
+  if (redisClient) {
+    await redisClient.set(
+      `verify:${verifyToken}`,
+      JSON.stringify({ name, email, password: hashPassword }),
+      { EX: 300 }
+    );
 
-//   await sendMail({
-//     email,
-//     subject: "Verify your email",
-//     html: getVerifyEmailHtml({ email, token: verifyToken }),
-//   });
+    await redisClient.set(rateLimitKey, "true", { EX: 300 });
+  }
 
-  await redisClient.set(rateLimitKey, "true", { EX: 300 });
+  // Email sending can be enabled later
+  // await sendMail({
+  //   email,
+  //   subject: "Verify your email",
+  //   html: getVerifyEmailHtml({ email, token: verifyToken }),
+  // });
 
-  res.json({
+  return res.status(200).json({
     message:
       "User registered successfully. Please verify your email within 5 minutes.",
   });
 });
+
 
 /* ================= VERIFY EMAIL ================= */
 
