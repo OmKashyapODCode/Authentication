@@ -6,10 +6,12 @@ import userRoutes from "./routes/user.js";
 
 const app = express();
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
