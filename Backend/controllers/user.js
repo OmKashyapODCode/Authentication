@@ -61,11 +61,11 @@ export const registerUser = TryCatch(async (req, res) => {
     { EX: 300 }
   );
 
-  await sendMail({
-    email,
-    subject: "Verify your email",
-    html: getVerifyEmailHtml({ email, token: verifyToken }),
-  });
+//   await sendMail({
+//     email,
+//     subject: "Verify your email",
+//     html: getVerifyEmailHtml({ email, token: verifyToken }),
+//   });
 
   await redisClient.set(rateLimitKey, "true", { EX: 300 });
 
