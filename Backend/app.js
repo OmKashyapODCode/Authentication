@@ -15,6 +15,12 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
+app.get("/", (req, res) => {
+  res.json({
+    message: "Authentication API is running",
+    status: "ok"
+  });
+});
 
 app.use("/api/v1", userRoutes);
 
