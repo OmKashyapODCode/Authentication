@@ -1,34 +1,45 @@
 import app from "../src/app.js";
 import connectDB from "../src/config/db.js";
 
-let dbInitialized = false;
+let dbConnected = false;
 
 const initDB = async () => {
-  if (!dbInitialized) {
+  if (!dbConnected) {
     await connectDB();
-    dbInitialized = true;
+    dbConnected = true;
   }
 };
 
+const allowedOrigins = [
+  "https://odcodeauthentication.netlify.app",
+];
+
 export default async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    res.setHeader(
-      "Access-Control-Allow-Origin",
-      "https://odcodeauthentication.netlify.app"
-    );
+  const origin = req.headers.origin;
+
+  if (
+    origin &&
+    (allowedOrigins.includes(origin) ||
+      origin.endsWith(".netlify.app"))
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,DELETE,OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
-    );
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+ 
+  if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
   await initDB();
-
   return app(req, res);
 }
