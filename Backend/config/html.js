@@ -197,8 +197,8 @@ Emoji','Segoe UI Emoji','Segoe UI Symbol', sans-serif;
 };
 
 export const getVerifyEmailHtml = ({ email, token }) => {
-  const appName = process.env.APP_NAME || "Authentication App";
-  const baseUrl = process.env.FRONTEND_URL || "https://authentication-odcode.onrender.com/";
+  const appName =  "Authentication App";
+  const baseUrl =  "https://authentication-odcode.onrender.com/";
 
   const verifyUrl = `${baseUrl.replace(/\/+$/, "")}/token/${encodeURIComponent(
     token
