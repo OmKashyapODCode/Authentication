@@ -1,90 +1,71 @@
-import React, { useState } from 'react';
-import { verifyOtp } from '../api/auth';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { server } from "../main";
+import { toast } from "react-toastify";
+import { AppData } from "../context/AppContext";
 
 const VerifyOtp = () => {
-  const location = useLocation();
+  const [otp, setOtp] = useState("");
+  const [btnLoading, setBtnLoading] = useState(false);
   const navigate = useNavigate();
-  const { fetchUser } = useAuth();
-  
-  const initialEmail = location.state?.email || '';
-  const initialMessage = location.state?.message || 'Please check your email for the OTP.';
+  const { setIsAuth, setUser } = AppData();
 
-  const [email, setEmail] = useState(initialEmail);
-  const [otp, setOtp] = useState('');
-  const [message, setMessage] = useState(initialMessage);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
+  const submitHandler = async (e) => {
+    setBtnLoading(true);
     e.preventDefault();
-    setMessage(null);
-    setError(null);
-    setIsLoading(true);
-
+    const email = localStorage.getItem("email");
     try {
-      const res = await verifyOtp({ email, otp });
-      
-      await fetchUser(); 
-      
-      navigate('/profile', { replace: true, state: { successMessage: res.data.message } });
-
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'OTP verification failed. Please try again.';
-      setError(errorMessage);
+      const { data } = await axios.post(
+        `${server}/api/v1/verify`,
+        { email, otp },
+        { withCredentials: true }
+      );
+      toast.success(data.message);
+      setIsAuth(true);
+      setUser(data.user);
+      localStorage.removeItem("email");
+      navigate("/");
+    } catch (error) {
+      toast.error(error.response.data.message);
     } finally {
-      setIsLoading(false);
+      setBtnLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-xl">
-      <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Verify OTP</h2>
-      <p className="mb-4 text-center text-gray-600">
-        Enter the 6-digit code sent to <strong>{email || 'your email'}</strong>.
-      </p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Security Check</h2>
+        <p className="text-center text-gray-500 mb-8 text-sm">Please enter the OTP sent to your email.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {message && <div className="p-3 bg-blue-100 text-blue-700 rounded border border-blue-300">{message}</div>}
-        {error && <div className="p-3 bg-red-100 text-red-700 rounded border border-red-300">{error}</div>}
-        
-        <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="otp">Verification Code (OTP)</label>
-          <input
-            type="text"
-            id="otp"
-            name="otp"
-            maxLength="6"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            className="w-full px-4 py-2 text-center text-2xl tracking-widest border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
+        <form onSubmit={submitHandler} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">One-Time Password</label>
+            <input
+              type="number"
+              className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+              placeholder="000000"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="emailInput">Email (for verification)</label>
-          <input
-            type="email"
-            id="emailInput"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-            required
-            placeholder="Enter email if not pre-filled"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading || otp.length !== 6 || email.length === 0}
-          className="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200 disabled:opacity-50"
-        >
-          {isLoading ? 'Verifying...' : 'Verify OTP'}
-        </button>
-      </form>
+          <button
+            disabled={btnLoading}
+            className={`w-full py-3 px-4 rounded-lg text-white font-medium ${
+              btnLoading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg"
+            } transition-all duration-200`}
+          >
+            {btnLoading ? "Verifying..." : "Confirm Code"}
+          </button>
+          
+          <div className="text-center">
+             <Link to="/login" className="text-xs text-gray-400 hover:text-gray-600 transition-colors">← Back to Login</Link>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

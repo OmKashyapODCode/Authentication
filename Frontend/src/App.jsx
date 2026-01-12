@@ -1,36 +1,48 @@
-import { Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import ProtectedRoute from './components/ProtectedRoute';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import { ToastContainer } from "react-toastify";
+import VerifyOtp from "./pages/VerifyOtp";
+import { AppData } from "./context/AppContext";
+import Loding from "./Loding";
+import Register from "./pages/Register";
+import Verify from "./pages/Verify";
+import Dashboard from "./pages/Dashboard";
 
-import HomePage from './pages/HomePage';
-import Register from './pages/Register';
-import Login from './pages/Login';
-import VerifyEmail from './pages/VerifyEmail';
-import VerifyOtp from './pages/VerifyOtp';
-import Profile from './pages/Profile';
-import NotFound from './pages/NotFound';
-
-function App() {
+const App = () => {
+  const { isAuth, loading } = AppData();
   return (
     <>
-      <Header />
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify/:token" element={<VerifyEmail />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-
-          <Route element={<ProtectedRoute />}>
-            <Route path="/profile" element={<Profile />} />
-          </Route>
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
+      {loading ? (
+        <Loding />
+      ) : (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={isAuth ? <Home /> : <Login />} />
+            <Route path="/login" element={isAuth ? <Home /> : <Login />} />
+            <Route
+              path="/register"
+              element={isAuth ? <Home /> : <Register />}
+            />
+            <Route
+              path="/verifyotp"
+              element={isAuth ? <Home /> : <VerifyOtp />}
+            />
+            <Route
+              path="/token/:token"
+              element={isAuth ? <Home /> : <Verify />}
+            />
+            <Route
+              path="/dashboard"
+              element={isAuth ? <Dashboard /> : <Login />}
+            />
+          </Routes>
+          <ToastContainer />
+        </BrowserRouter>
+      )}
     </>
   );
-}
+};
 
 export default App;
