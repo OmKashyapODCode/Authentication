@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const server = "https://authentication-odcode.onrender.com/";
+const server = "https://authentication-odcode.onrender.com";
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
