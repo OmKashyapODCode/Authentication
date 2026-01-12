@@ -2,7 +2,7 @@ import { loginSchema, registerSchema } from "../config/zod.js";
 import { redisClient } from "../index.js";
 import tryCatch from "../middlewares/tryCatch.js";
 import sanitize from "mongo-sanitize";
-import { User } from "../models/User.js";
+import { User } from "../models/user.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import sendMail from "../config/sendMail.js";
