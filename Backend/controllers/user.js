@@ -1,6 +1,6 @@
 import { loginSchema, registerSchema } from "../config/zod.js";
 import { redisClient } from "../index.js";
-import TryCatch from "../middlewares/TryCatch.js";
+import tryCatch from "../middlewares/tryCatch.js";
 import sanitize from "mongo-sanitize";
 import { User } from "../models/User.js";
 import bcrypt from "bcrypt";
@@ -15,7 +15,7 @@ import {
 } from "../config/generateToken.js";
 import { generateCSRFToken } from "../config/csrfMiddleware.js";
 
-export const registerUser = TryCatch(async (req, res) => {
+export const registerUser = tryCatch(async (req, res) => {
   const sanitezedBody = sanitize(req.body);
 
   const validation = registerSchema.safeParse(sanitezedBody);
@@ -86,7 +86,7 @@ export const registerUser = TryCatch(async (req, res) => {
   });
 });
 
-export const verifyUser = TryCatch(async (req, res) => {
+export const verifyUser = tryCatch(async (req, res) => {
   const { token } = req.params;
 
   if (!token) {
@@ -129,7 +129,7 @@ export const verifyUser = TryCatch(async (req, res) => {
   });
 });
 
-export const loginUser = TryCatch(async (req, res) => {
+export const loginUser = tryCatch(async (req, res) => {
   const sanitezedBody = sanitize(req.body);
 
   const validation = loginSchema.safeParse(sanitezedBody);
@@ -205,7 +205,7 @@ export const loginUser = TryCatch(async (req, res) => {
   });
 });
 
-export const verifyOtp = TryCatch(async (req, res) => {
+export const verifyOtp = tryCatch(async (req, res) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -249,7 +249,7 @@ export const verifyOtp = TryCatch(async (req, res) => {
   });
 });
 
-export const myProfile = TryCatch(async (req, res) => {
+export const myProfile = tryCatch(async (req, res) => {
   const user = req.user;
 
   const sessionId = req.sessionId;
@@ -270,7 +270,7 @@ export const myProfile = TryCatch(async (req, res) => {
   res.json({ user, sessionInfo });
 });
 
-export const refreshToken = TryCatch(async (req, res) => {
+export const refreshToken = tryCatch(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
   if (!refreshToken) {
@@ -298,7 +298,7 @@ export const refreshToken = TryCatch(async (req, res) => {
   });
 });
 
-export const logutUser = TryCatch(async (req, res) => {
+export const logutUser = tryCatch(async (req, res) => {
   const userId = req.user._id;
 
   await revokeRefershToken(userId);
@@ -314,7 +314,7 @@ export const logutUser = TryCatch(async (req, res) => {
   });
 });
 
-export const refreshCSRF = TryCatch(async (req, res) => {
+export const refreshCSRF = tryCatch(async (req, res) => {
   const userId = req.user._id;
 
   const newCSRFToken = await generateCSRFToken(userId, res);
@@ -325,7 +325,7 @@ export const refreshCSRF = TryCatch(async (req, res) => {
   });
 });
 
-export const adminController = TryCatch(async (req, res) => {
+export const adminController = tryCatch(async (req, res) => {
   res.json({
     message: "Hello admin",
   });
