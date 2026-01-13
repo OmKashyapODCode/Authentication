@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { server } from "../main";
+// import { server } from "../main";
 import api from "../apiIntercepter";
 import { toast } from "react-toastify";
 
@@ -13,7 +13,7 @@ export const AppProvider = ({ children }) => {
   async function fetchUser() {
     setLoading(true);
     try {
-      const { data } = await api.get(`/api/v1/me`);
+      const { data } = await api.get("/api/v1/me");
 
       setUser(data.user);
       setIsAuth(true);
