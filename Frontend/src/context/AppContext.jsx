@@ -19,7 +19,9 @@ export const AppProvider = ({ children }) => {
       setIsAuth(true);
     } catch (error) {
       console.log("hi im from app context");
-      console.log(error);
+      if (error.response?.status !== 401) {
+      console.error("fetchUser failed:", error);
+    }
       setUser(null);
       setIsAuth(false);
     } finally {
