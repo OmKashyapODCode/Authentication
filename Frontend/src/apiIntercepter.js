@@ -56,7 +56,7 @@ api.interceptors.response.use(
 
     /* If refresh itself fails with 401, stop */
     if (
-      originalRequest?.url?.includes("/api/v1/refresh") &&
+      originalRequest?.url?.includes("api/v1/refresh") &&
       status === 401
     ) {
       return Promise.reject(error);
@@ -87,7 +87,7 @@ api.interceptors.response.use(
         isRefreshingCSRFToken = true;
 
         try {
-          await api.post("/api/v1/refresh-csrf");
+          await api.post("api/v1/refresh-csrf");
           processCSRFQueue(null);
           return api(originalRequest);
         } catch (err) {
@@ -102,7 +102,7 @@ api.interceptors.response.use(
     /* Refresh access token only for protected routes */
     const isPublicRoute =
       originalRequest.url.includes("/send-otp") ||
-      originalRequest.url.includes("/verify-otp") ||
+      originalRequest.url.includes("verify-otp") ||
       originalRequest.url.includes("/login") ||
       originalRequest.url.includes("/register");
 
@@ -121,7 +121,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("/api/v1/refresh");
+        await api.post("api/v1/refresh");
         processQueue(null);
         return api(originalRequest);
       } catch (err) {
