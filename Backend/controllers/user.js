@@ -156,7 +156,7 @@ export const loginUser = tryCatch(async (req, res) => {
   }
 
   const { email, password } = validation.data;
-
+console.log("redis start ")
   const rateLimitKey = `login-rate-limit:${req.ip}:${email}`;
 
   if (await redisClient.get(rateLimitKey)) {
