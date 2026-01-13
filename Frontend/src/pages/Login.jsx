@@ -24,7 +24,7 @@ const Login = () => {
       });
       toast.success(data.message);
       localStorage.setItem("email", email);
-      navigate("/verifyotp");
+      navigate("/verify");
     } catch (error) {
       toast.error(error.response?.data?.message || "Login Failed");
     } finally {
