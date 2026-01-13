@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-// import { server } from "../main";
+import { server } from "../main";
 import api from "../apiIntercepter";
 import { toast } from "react-toastify";
 
@@ -13,12 +13,12 @@ export const AppProvider = ({ children }) => {
   async function fetchUser() {
     setLoading(true);
     try {
-      const { data } = await api.get("me");
+      const { data } = await api.get("/me");
 
       setUser(data.user);
       setIsAuth(true);
     } catch (error) {
-      console.log("hi im from app context");
+      // console.log("hi im from app context");
       console.error( error);
       setUser(null);
       setIsAuth(false);
@@ -29,7 +29,7 @@ export const AppProvider = ({ children }) => {
 
   async function logoutUser(navigate) {
     try {
-      const { data } = await api.post("logout");
+      const { data } = await api.post("/logout");
       toast.success(data.message);
       setIsAuth(false);
       setUser(null);
