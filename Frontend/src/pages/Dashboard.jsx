@@ -8,7 +8,7 @@ const Dashboard = () => {
   
   async function fetchAdminData() {
     try {
-      const { data } = await api.get(`/api/v1/admin`, { withCredentials: true });
+      const { data } = await api.get(`admin`, { withCredentials: true });
       setContent(data.message);
     } catch (error) {
       toast.error(error.response.data.message);

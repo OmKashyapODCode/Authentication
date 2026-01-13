@@ -56,7 +56,7 @@ api.interceptors.response.use(
 
     /* If refresh itself fails with 401, stop */
     if (
-      originalRequest?.url?.includes("api/v1/refresh") &&
+      originalRequest?.url?.includes("refresh") &&
       status === 401
     ) {
       return Promise.reject(error);
@@ -87,7 +87,7 @@ api.interceptors.response.use(
         isRefreshingCSRFToken = true;
 
         try {
-          await api.post("api/v1/refresh-csrf");
+          await api.post("refresh-csrf");
           processCSRFQueue(null);
           return api(originalRequest);
         } catch (err) {
