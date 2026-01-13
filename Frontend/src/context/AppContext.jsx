@@ -13,15 +13,13 @@ export const AppProvider = ({ children }) => {
   async function fetchUser() {
     setLoading(true);
     try {
-      const { data } = await api.get(`api/v1/me`);
+      const { data } = await api.get(`/api/v1/me`);
 
       setUser(data.user);
       setIsAuth(true);
     } catch (error) {
       console.log("hi im from app context");
-      if (error.response?.status !== 401) {
-      console.error("fetchUser failed:", error);
-    }
+      console.error( error);
       setUser(null);
       setIsAuth(false);
     } finally {
