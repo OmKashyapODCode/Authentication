@@ -184,21 +184,21 @@ export const loginUser = tryCatch(async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   const otpKey = `otp:${email}`;
-
+console.log(1)
   await redisClient.set(otpKey, JSON.stringify(otp), {
     EX: 300,
   });
-
+console.log(2)
   const subject = "Otp for verification";
 
   const html = getOtpHtml({ email, otp });
-
+console.log(3,html)
   await sendMail({ email, subject, html });
-
+  console.log(4)
   await redisClient.set(rateLimitKey, "true", {
     EX: 60,
   });
-
+console.log(5)
   res.json({
     message:
       "If your email is vaid, an otp has been sent. it will be valid for 5 min",
