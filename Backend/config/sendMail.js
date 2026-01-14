@@ -1,28 +1,23 @@
-import { createTransport } from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend("re_ZeAgo8Hy_AKXp2m2N2mwYpuZgpTQf5Yzm");
 
 const sendMail = async ({ email, subject, html }) => {
-
-  const transport = createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  });
-console.log("start 1")
   console.log("Before sendMail");
 
-await transport.sendMail({
-  from: `"Auth App" <${process.env.SMTP_USER}>`,
-  to: email,
-  subject,
-  html,
-});
+  const { data, error } = await resend.emails.send({
+    from: "Website <website@resend.dev>",
+    to: email,
+    subject,
+    html,
+  });
 
-console.log("After sendMail");
+  if (error) {
+    console.error("Resend error:", error);
+    throw new Error("Email not sent");
+  }
 
+  console.log("After sendMail", data);
 };
-console.log("start : 2")
+
 export default sendMail;
