@@ -1,11 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend("re_ZeAgo8Hy_AKXp2m2N2mwYpuZgpTQf5Yzm");
-
 const sendMail = async ({ email, subject, html }) => {
-  console.log("Before sendMail");
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is missing");
+  }
 
-  const { data, error } = await resend.emails.send({
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  const { error } = await resend.emails.send({
     from: "Website <website@resend.dev>",
     to: email,
     subject,
@@ -14,10 +16,8 @@ const sendMail = async ({ email, subject, html }) => {
 
   if (error) {
     console.error("Resend error:", error);
-    throw new Error("Email not sent");
+    throw error;
   }
-
-  console.log("After sendMail", data);
 };
 
 export default sendMail;
