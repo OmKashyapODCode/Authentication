@@ -208,6 +208,9 @@ export const loginUser = tryCatch(async (req, res) => {
   const subject = "Otp for verification";
 
   const html = getOtpHtml({ email, otp });
+  console.log(html)
+  console.log(email);
+  
    console.log("login mid : 7")
 
   await sendMail({ email, subject, html });
