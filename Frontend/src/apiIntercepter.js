@@ -54,29 +54,15 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
-    /* If refresh itself fails with 401, stop */
-    if (
-      originalRequest?.url?.includes("/refresh") &&
-      status === 401
-    ) {
+    if (originalRequest?.url?.includes("/refresh") && status === 401) {
       return Promise.reject(error);
     }
 
-    /* If user is not authenticated, do not retry */
-    if (status === 401 && !originalRequest._retry) {
-      return Promise.reject(error);
-    }
-
-    /* Handle CSRF errors only if refresh token exists */
+    /* Handle CSRF errors */
     if (status === 403 && !originalRequest._retry) {
       const errorCode = error.response?.data?.code || "";
 
       if (errorCode.startsWith("CSRF_")) {
-        const hasRefreshToken = getCookie("refreshToken");
-        if (!hasRefreshToken) {
-          return Promise.reject(error);
-        }
-
         if (isRefreshingCSRFToken) {
           return new Promise((resolve, reject) => {
             csrfFailedQueue.push({ resolve, reject });
@@ -99,7 +85,6 @@ api.interceptors.response.use(
       }
     }
 
-    /* Refresh access token only for protected routes */
     const isPublicRoute =
       originalRequest.url.includes("/send-otp") ||
       originalRequest.url.includes("/verify-otp") ||
@@ -135,5 +120,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default api;
