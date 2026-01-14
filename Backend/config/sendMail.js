@@ -12,12 +12,17 @@ const sendMail = async ({ email, subject, html }) => {
     },
   });
 console.log("start 1")
-  await transport.sendMail({
-    from: process.env.SMTP_USER,
-    to: email,
-    subject,
-    html,
-  });
+  console.log("Before sendMail");
+
+await transport.sendMail({
+  from: `"Auth App" <${process.env.SMTP_USER}>`,
+  to: email,
+  subject,
+  html,
+});
+
+console.log("After sendMail");
+
 };
 console.log("start : 2")
 export default sendMail;
