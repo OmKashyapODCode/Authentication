@@ -1,9 +1,7 @@
 import { createTransport } from "nodemailer";
 
 const sendMail = async ({ email, subject, html }) => {
-  console.log("SMTP_USER:", process.env.SMTP_USER);
-  console.log("SMTP_PASSWORD exists:", !!process.env.SMTP_PASSWORD);
-  console.log(email,subject,html)
+
   const transport = createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -13,7 +11,7 @@ const sendMail = async ({ email, subject, html }) => {
       pass: process.env.SMTP_PASSWORD,
     },
   });
-
+console.log("start 1")
   await transport.sendMail({
     from: process.env.SMTP_USER,
     to: email,
@@ -21,5 +19,5 @@ const sendMail = async ({ email, subject, html }) => {
     html,
   });
 };
-
+console.log("start : 2")
 export default sendMail;
