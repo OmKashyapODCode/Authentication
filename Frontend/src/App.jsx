@@ -26,7 +26,7 @@ const App = () => {
               element={isAuth ? <Home /> : <Register />}
             />
             <Route
-              path="/verifyotp"
+              path="/verify"
               element={isAuth ? <Home /> : <VerifyOtp />}
             />
             <Route
