@@ -198,13 +198,13 @@ Emoji','Segoe UI Emoji','Segoe UI Symbol', sans-serif;
 
 export const getVerifyEmailHtml = ({ email, token }) => {
   const appName =  "Authentication App";
-  const baseUrl =  "https://authentication-odcode.onrender.com/api/v1";
+  const baseUrl =  "https://authentication-odcode.onrender.com";
 
   const verifyUrl = `${baseUrl.replace(/\/+$/, "")}/token/${encodeURIComponent(
     token
   )}`;
 
-  //https://authentication-odcode.onrender.com/api/v1token/sdakfjoaijfojalskdjfoiaw
+  //https://authentication-odcode.onrender.com/token/sdakfjoaijfojalskdjfoiaw
 
   const html = `<!DOCTYPE html> 
 <html lang="en"> 
