@@ -49,7 +49,7 @@ const Home = () => {
                 {/* Admin Dashboard */}
                 {user && user.role === "admin" && (
                   <Link
-                    to="/dashboard"
+                    to="/admin"
                     className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300"
                   >
                     <div className="h-12 w-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">

@@ -25,7 +25,7 @@ const App = () => {
         <Route path="/register" element={isAuth ? <Home /> : <Register />} />
         <Route path="/verify" element={isAuth ? <Home /> : <VerifyOtp />} />
         <Route path="/token/:token" element={isAuth ? <Home /> : <Verify />} />
-        <Route path="/dashboard" element={<Admin><Dashboard /></Admin>} />
+        <Route path="/admin" element={<Admin><Dashboard /></Admin>} />
         <Route path="/me" element={isAuth ? <Myprofile /> : <Register />} />
       </Routes>
       <ToastContainer />
