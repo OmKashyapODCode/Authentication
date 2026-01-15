@@ -41,9 +41,7 @@ const processQueue = (error) => {
 };
 
 const processCSRFQueue = (error) => {
-  csrfFailedQueue.forEach((p) =>
-    error ? p.reject(error) : p.resolve()
-  );
+  csrfFailedQueue.forEach((p) => (error ? p.reject(error) : p.resolve()));
   csrfFailedQueue = [];
 };
 
@@ -58,7 +56,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    /* Handle CSRF errors */
+    /* ---------------- CSRF HANDLING ---------------- */
     if (status === 403 && !originalRequest._retry) {
       const errorCode = error.response?.data?.code || "";
 
@@ -85,12 +83,13 @@ api.interceptors.response.use(
       }
     }
 
+    /* ---------------- FIXED PUBLIC ROUTES ---------------- */
     const isPublicRoute =
-      originalRequest.url.includes("/send-otp") ||
-      originalRequest.url.includes("/verify-otp") ||
       originalRequest.url.includes("/login") ||
-      originalRequest.url.includes("/register");
+      originalRequest.url.includes("/register") ||
+      originalRequest.url.includes("/verify");
 
+    /* ---------------- ACCESS TOKEN REFRESH ---------------- */
     if (
       (status === 401 || status === 403) &&
       !originalRequest._retry &&
@@ -120,6 +119,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 export default api;

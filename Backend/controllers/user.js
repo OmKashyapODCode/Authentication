@@ -15,10 +15,9 @@ import {
 } from "../config/generateToken.js";
 import { generateCSRFToken } from "../config/csrfMiddleware.js";
 
-export const registerUser = tryCatch(async (req, res) => {
-    
-  console.log("register start")
+/* ================= REGISTER ================= */
 
+export const registerUser = tryCatch(async (req, res) => {
   const sanitezedBody = sanitize(req.body);
 
   const validation = registerSchema.safeParse(sanitezedBody);
@@ -43,17 +42,23 @@ export const registerUser = tryCatch(async (req, res) => {
       error: allErrors,
     });
   }
-  console.log("register mid : 1")
+
   const { name, email, password } = validation.data;
- console.log("register mid : 2")
+
+  const role =
+    sanitezedBody.role === "admin" &&
+    process.env.ALLOW_ADMIN_REGISTER === "true"
+      ? "admin"
+      : "user";
+
   const rateLimitKey = `register-rate-limit:${req.ip}:${email}`;
- console.log("register mid : 3")
+
   if (await redisClient.get(rateLimitKey)) {
     return res.status(429).json({
       message: "Too many requests, try again later",
     });
   }
- console.log("register mid : 4")
+
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
@@ -65,32 +70,34 @@ export const registerUser = tryCatch(async (req, res) => {
   const hashPassword = await bcrypt.hash(password, 10);
 
   const verifyToken = crypto.randomBytes(32).toString("hex");
-
   const verifyKey = `verify:${verifyToken}`;
 
+ 
   const datatoStore = JSON.stringify({
     name,
     email,
     password: hashPassword,
+    role,
   });
- console.log("register mid : 5")
+
   await redisClient.set(verifyKey, datatoStore, { EX: 300 });
- console.log("register mid : 6")
+
   const subject = "verify your email for Account creation";
   const html = getVerifyEmailHtml({ email, token: verifyToken });
- console.log("register mid : 7")
+
   await sendMail({ email, subject, html });
- console.log("register mid : 8")
+
   await redisClient.set(rateLimitKey, "true", { EX: 60 });
- console.log("register mid : 9")
+
   res.json({
     message:
       "If your email is valid, a verification like has been sent. it will expire in 5 minutes",
   });
 });
 
+/* ================= VERIFY EMAIL ================= */
+
 export const verifyUser = tryCatch(async (req, res) => {
-   console.log("verify start")
   const { token } = req.params;
 
   if (!token) {
@@ -100,19 +107,15 @@ export const verifyUser = tryCatch(async (req, res) => {
   }
 
   const verifyKey = `verify:${token}`;
- console.log("verify mid : 1")
   const userDataJson = await redisClient.get(verifyKey);
- console.log("verify mid : 2")
 
   if (!userDataJson) {
     return res.status(400).json({
       message: "Verification Link is expired.",
     });
   }
- console.log("verify mid : 3")
 
   await redisClient.del(verifyKey);
- console.log("verify mid : 4")
 
   const userData = JSON.parse(userDataJson);
 
@@ -124,22 +127,28 @@ export const verifyUser = tryCatch(async (req, res) => {
     });
   }
 
+ 
   const newUser = await User.create({
     name: userData.name,
     email: userData.email,
     password: userData.password,
+    role: userData.role || "user",
   });
- console.log("verify end")
 
   res.status(201).json({
     message: "Email verified successfully! your account has been created",
-    user: { _id: newUser._id, name: newUser.name, email: newUser.email },
+    user: {
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    },
   });
 });
 
-export const loginUser = tryCatch(async (req, res) => {
-   console.log("login start")
+/* ================= LOGIN ================= */
 
+export const loginUser = tryCatch(async (req, res) => {
   const sanitezedBody = sanitize(req.body);
 
   const validation = loginSchema.safeParse(sanitezedBody);
@@ -164,13 +173,10 @@ export const loginUser = tryCatch(async (req, res) => {
       error: allErrors,
     });
   }
-   console.log("login mid : 1")
 
   const { email, password } = validation.data;
-   console.log("login mid : 2")
 
   const rateLimitKey = `login-rate-limit:${req.ip}:${email}`;
-   console.log("login mid : 3")
 
   if (await redisClient.get(rateLimitKey)) {
     return res.status(429).json({
@@ -195,37 +201,24 @@ export const loginUser = tryCatch(async (req, res) => {
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-   console.log("login mid : 4")
-
   const otpKey = `otp:${email}`;
-   console.log("login mid : 5")
 
-  await redisClient.set(otpKey, JSON.stringify(otp), {
-    EX: 300,
-  });
-   console.log("login mid : 6")
+  await redisClient.set(otpKey, JSON.stringify(otp), { EX: 300 });
 
   const subject = "Otp for verification";
-
   const html = getOtpHtml({ email, otp });
-  console.log(html)
-  console.log(email);
-  
-   console.log("login mid : 7")
 
   await sendMail({ email, subject, html });
-     console.log("login mid : 8")
 
-  await redisClient.set(rateLimitKey, "true", {
-    EX: 60,
-  });
-   console.log("login end")
+  await redisClient.set(rateLimitKey, "true", { EX: 60 });
 
   res.json({
     message:
       "If your email is vaid, an otp has been sent. it will be valid for 5 min",
   });
 });
+
+/* ================= VERIFY OTP ================= */
 
 export const verifyOtp = tryCatch(async (req, res) => {
   const { email, otp } = req.body;
@@ -237,7 +230,6 @@ export const verifyOtp = tryCatch(async (req, res) => {
   }
 
   const otpKey = `otp:${email}`;
-
   const storedOtpString = await redisClient.get(otpKey);
 
   if (!storedOtpString) {
@@ -256,8 +248,7 @@ export const verifyOtp = tryCatch(async (req, res) => {
 
   await redisClient.del(otpKey);
 
-  let user = await User.findOne({ email });
-
+  const user = await User.findOne({ email });
   const tokenData = await generateToken(user._id, res);
 
   res.status(200).json({
@@ -271,13 +262,13 @@ export const verifyOtp = tryCatch(async (req, res) => {
   });
 });
 
+/* ================= PROFILE ================= */
+
 export const myProfile = tryCatch(async (req, res) => {
   const user = req.user;
-
   const sessionId = req.sessionId;
 
   const sessionData = await redisClient.get(`session:${sessionId}`);
-
   let sessionInfo = null;
 
   if (sessionData) {
@@ -291,6 +282,8 @@ export const myProfile = tryCatch(async (req, res) => {
 
   res.json({ user, sessionInfo });
 });
+
+/* ================= REFRESH TOKEN ================= */
 
 export const refreshToken = tryCatch(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
@@ -320,6 +313,8 @@ export const refreshToken = tryCatch(async (req, res) => {
   });
 });
 
+/* ================= LOGOUT ================= */
+
 export const logutUser = tryCatch(async (req, res) => {
   const userId = req.user._id;
 
@@ -336,6 +331,8 @@ export const logutUser = tryCatch(async (req, res) => {
   });
 });
 
+/* ================= CSRF ================= */
+
 export const refreshCSRF = tryCatch(async (req, res) => {
   const userId = req.user._id;
 
@@ -346,6 +343,8 @@ export const refreshCSRF = tryCatch(async (req, res) => {
     csrfToken: newCSRFToken,
   });
 });
+
+/* ================= ADMIN ================= */
 
 export const adminController = tryCatch(async (req, res) => {
   res.json({

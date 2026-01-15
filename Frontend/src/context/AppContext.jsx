@@ -18,7 +18,6 @@ export const AppProvider = ({ children }) => {
       setUser(data.user);
       setIsAuth(true);
     } catch (error) {
-      // console.log("hi im from app context");
       console.error( error);
       setUser(null);
       setIsAuth(false);

@@ -9,6 +9,8 @@ import Loding from "./Loding";
 import Register from "./pages/Register";
 import Verify from "./pages/Verify";
 import Dashboard from "./pages/Dashboard";
+import Admin from "./pages/Admin";
+
 
 const App = () => {
   const { isAuth, loading } = AppData();
@@ -33,9 +35,9 @@ const App = () => {
               path="/token/:token"
               element={isAuth ? <Home /> : <Verify />}
             />
-            <Route
-              path="/dashboard"
-              element={isAuth ? <Dashboard /> : <Login />}
+            <Route 
+              path="/dashboard"  
+              element={<Admin> <Dashboard /> </Admin>}
             />
           </Routes>
           <ToastContainer />
