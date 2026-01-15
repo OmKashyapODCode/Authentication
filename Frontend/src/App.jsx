@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import Verify from "./pages/Verify";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import Myprofile from "./pages/Myprofile";
+
 
 
 const App = () => {
@@ -38,6 +40,10 @@ const App = () => {
             <Route 
               path="/dashboard"  
               element={<Admin> <Dashboard /> </Admin>}
+            />
+             <Route
+              path="/me"
+              element={isAuth ? <Myprofile /> : <Register />}
             />
           </Routes>
           <ToastContainer />

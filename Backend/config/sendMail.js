@@ -9,7 +9,7 @@ const sendMail = async ({ email, subject, html }) => {
 
   const { error } = await resend.emails.send({
     from: "no-reply@resend.dev",
-    to: email || "kashyap.om8585@gmail.com",
+    to:  "kashyap.om8585@gmail.com",
     subject,
     html,
   });
