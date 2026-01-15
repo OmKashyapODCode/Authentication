@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { server } from "../main";
 import api from "../apiIntercepter";
 import { toast } from "react-toastify";
 
@@ -7,6 +6,7 @@ const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [sessionInfo, setSessionInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
@@ -16,10 +16,11 @@ export const AppProvider = ({ children }) => {
       const { data } = await api.get("/me");
 
       setUser(data.user);
+      setSessionInfo(data.sessionInfo || null);
       setIsAuth(true);
     } catch (error) {
-      console.error( error);
       setUser(null);
+      setSessionInfo(null);
       setIsAuth(false);
     } finally {
       setLoading(false);
@@ -32,6 +33,7 @@ export const AppProvider = ({ children }) => {
       toast.success(data.message);
       setIsAuth(false);
       setUser(null);
+      setSessionInfo(null);
       navigate("/login");
     } catch (error) {
       toast.error("Something went wrong");
@@ -44,7 +46,15 @@ export const AppProvider = ({ children }) => {
 
   return (
     <AppContext.Provider
-      value={{ setIsAuth, isAuth, user, setUser, loading, logoutUser }}
+      value={{
+        setIsAuth,
+        isAuth,
+        user,
+        sessionInfo,
+        setUser,
+        loading,
+        logoutUser,
+      }}
     >
       {children}
     </AppContext.Provider>
@@ -53,7 +63,8 @@ export const AppProvider = ({ children }) => {
 
 export const AppData = () => {
   const context = useContext(AppContext);
-
-  if (!context) throw new Error("AppData must be used within an Appprovider");
+  if (!context) {
+    throw new Error("AppData must be used within an AppProvider");
+  }
   return context;
 };

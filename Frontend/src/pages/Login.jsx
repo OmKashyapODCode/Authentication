@@ -26,6 +26,7 @@ const Login = () => {
       localStorage.setItem("email", email);
       navigate("/verify");
     } catch (error) {
+      console.log(error)
       toast.error(error.response?.data?.message || "Login Failed");
     } finally {
       setBtnLoading(false);

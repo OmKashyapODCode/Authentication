@@ -8,9 +8,8 @@ const sendMail = async ({ email, subject, html }) => {
   const resend = new Resend(process.env.RESEND_API_KEY);
 
   const { error } = await resend.emails.send({
-    // from: "Website <website@resend.dev>",
     from: "no-reply@resend.dev",
-    to: "kashyap.om8585@gmail.com",
+    to: email || "kashyap.om8585@gmail.com",
     subject,
     html,
   });
