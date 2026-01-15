@@ -31,7 +31,7 @@ const Register = () => {
         name,
         email,
         password,
-        role, // ADD
+        role,
       });
 
       toast.success(data.message);
@@ -47,7 +47,7 @@ const Register = () => {
     }
   };
 
-  // Eye Icon (unchanged)
+  
   const EyeIcon = ({ visible, onClick }) => (
     <button
       type="button"
@@ -80,7 +80,7 @@ const Register = () => {
           </p>
         </div>
 
-        {/* ROLE TOGGLE (ADD) */}
+        {/* ROLE TOGGLE */}
         <div className="flex border rounded-lg overflow-hidden">
           <button
             type="button"

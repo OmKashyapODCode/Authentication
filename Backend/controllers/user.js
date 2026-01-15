@@ -71,7 +71,6 @@ export const registerUser = tryCatch(async (req, res) => {
 
   const verifyToken = crypto.randomBytes(32).toString("hex");
   const verifyKey = `verify:${verifyToken}`;
-
  
   const datatoStore = JSON.stringify({
     name,
