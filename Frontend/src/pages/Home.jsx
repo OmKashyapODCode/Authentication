@@ -3,7 +3,7 @@ import { AppData } from "../context/AppContext";
 import { Link, useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const { logoutUser, user, sessionInfo } = AppData();
+  const { logoutUser, user } = AppData();
   const navigate = useNavigate();
 
   return (
@@ -30,15 +30,32 @@ const Home = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* My Profile */}
+                <Link
+                  to="/me"
+                  className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300"
+                >
+                  <div className="h-12 w-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <span className="text-xl font-bold">P</span>
+                  </div>
+                  <span className="text-gray-900 font-medium">
+                    My Profile
+                  </span>
+                  <span className="text-sm text-gray-500 mt-1">
+                    View account details
+                  </span>
+                </Link>
+
+                {/* Admin Dashboard */}
                 {user && user.role === "admin" && (
                   <Link
                     to="/dashboard"
-                    className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300 cursor-pointer"
+                    className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all duration-300"
                   >
                     <div className="h-12 w-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <span className="text-2xl font-bold">D</span>
                     </div>
-                    <span className="text-gray-900 font-medium group-hover:text-purple-700">
+                    <span className="text-gray-900 font-medium">
                       Access Dashboard
                     </span>
                     <span className="text-sm text-gray-500 mt-1">
@@ -47,6 +64,7 @@ const Home = () => {
                   </Link>
                 )}
 
+                {/* Logout */}
                 <button
                   onClick={() => logoutUser(navigate)}
                   className="group flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all duration-300"
@@ -54,7 +72,7 @@ const Home = () => {
                   <div className="h-12 w-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <span className="text-xl font-bold">→</span>
                   </div>
-                  <span className="text-gray-900 font-medium group-hover:text-red-700">
+                  <span className="text-gray-900 font-medium">
                     Logout
                   </span>
                   <span className="text-sm text-gray-500 mt-1">
@@ -62,37 +80,6 @@ const Home = () => {
                   </span>
                 </button>
               </div>
-
-              {sessionInfo && (
-                <div className="mt-8 border-t pt-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    Session Information
-                  </h3>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium text-gray-800">
-                        Session ID:
-                      </span>
-                      <div className="break-all">{sessionInfo.sessionId}</div>
-                    </div>
-
-                    <div>
-                      <span className="font-medium text-gray-800">
-                        Login Time:
-                      </span>
-                      <div>{sessionInfo.loginTime}</div>
-                    </div>
-
-                    <div>
-                      <span className="font-medium text-gray-800">
-                        Last Activity:
-                      </span>
-                      <div>{sessionInfo.lastActivity}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
             </div>
           </div>
