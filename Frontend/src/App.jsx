@@ -8,6 +8,8 @@ import VerifyOtp from "./pages/VerifyOtp";
 import Dashboard from "./pages/Dashboard";
 import Myprofile from "./pages/Myprofile";
 import Admin from "./pages/Admin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { AppData } from "./context/AppContext";
 import Loding from "./Loding";
 import { ToastContainer } from "react-toastify";
@@ -25,7 +27,24 @@ const App = () => {
         <Route path="/register" element={isAuth ? <Home /> : <Register />} />
         <Route path="/verify" element={isAuth ? <Home /> : <VerifyOtp />} />
         <Route path="/token/:token" element={isAuth ? <Home /> : <Verify />} />
-        <Route path="/admin" element={<Admin><Dashboard /></Admin>} />
+
+        <Route
+          path="/forgot-password"
+          element={isAuth ? <Home /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password/:token"
+          element={isAuth ? <Home /> : <ResetPassword />}
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <Admin>
+              <Dashboard />
+            </Admin>
+          }
+        />
         <Route path="/me" element={isAuth ? <Myprofile /> : <Register />} />
       </Routes>
       <ToastContainer />

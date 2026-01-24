@@ -1,12 +1,14 @@
 import express from "express";
 import {
   adminController,
+  forgotPassword,
   loginUser,
   logutUser,
   myProfile,
   refreshCSRF,
   refreshToken,
   registerUser,
+  resetPassword,
   verifyOtp,
   verifyUser,
 } from "../controllers/user.js";
@@ -19,6 +21,8 @@ router.post("/register", registerUser);
 router.post("/verify/:token", verifyUser);
 router.post("/login", loginUser);
 router.post("/verify", verifyOtp);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 router.get("/me", isAuth, myProfile);
 router.post("/refresh", refreshToken);
 router.post("/logout", isAuth, verifyCSRFToken, logutUser);

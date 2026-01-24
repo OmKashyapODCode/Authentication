@@ -15,6 +15,7 @@ import {
 } from "../config/generateToken.js";
 import { generateCSRFToken } from "../config/csrfMiddleware.js";
 
+
 /* ================= REGISTER ================= */
 
 export const registerUser = tryCatch(async (req, res) => {
@@ -71,7 +72,7 @@ export const registerUser = tryCatch(async (req, res) => {
 
   const verifyToken = crypto.randomBytes(32).toString("hex");
   const verifyKey = `verify:${verifyToken}`;
- 
+
   const datatoStore = JSON.stringify({
     name,
     email,
@@ -126,7 +127,6 @@ export const verifyUser = tryCatch(async (req, res) => {
     });
   }
 
- 
   const newUser = await User.create({
     name: userData.name,
     email: userData.email,
@@ -153,50 +153,15 @@ export const loginUser = tryCatch(async (req, res) => {
   const validation = loginSchema.safeParse(sanitezedBody);
 
   if (!validation.success) {
-    const zodError = validation.error;
-
-    let firstErrorMessage = "Validation failed";
-    let allErrors = [];
-
-    if (zodError?.issues && Array.isArray(zodError.issues)) {
-      allErrors = zodError.issues.map((issue) => ({
-        field: issue.path ? issue.path.join(".") : "unknown",
-        message: issue.message || "Validation Error",
-        code: issue.code,
-      }));
-
-      firstErrorMessage = allErrors[0]?.message || "Validation Error";
-    }
-    return res.status(400).json({
-      message: firstErrorMessage,
-      error: allErrors,
-    });
+    return res.status(400).json({ message: "Validation failed" });
   }
 
   const { email, password } = validation.data;
 
-  const rateLimitKey = `login-rate-limit:${req.ip}:${email}`;
-
-  if (await redisClient.get(rateLimitKey)) {
-    return res.status(429).json({
-      message: "Too many requests, try again later",
-    });
-  }
-
   const user = await User.findOne({ email });
 
-  if (!user) {
-    return res.status(400).json({
-      message: "Invailid credentials",
-    });
-  }
-
-  const comparePassword = await bcrypt.compare(password, user.password);
-
-  if (!comparePassword) {
-    return res.status(400).json({
-      message: "Invailid credentials",
-    });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ message: "Invailid credentials" });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -209,8 +174,6 @@ export const loginUser = tryCatch(async (req, res) => {
 
   await sendMail({ email, subject, html });
 
-  await redisClient.set(rateLimitKey, "true", { EX: 60 });
-
   res.json({
     message:
       "If your email is vaid, an otp has been sent. it will be valid for 5 min",
@@ -222,27 +185,11 @@ export const loginUser = tryCatch(async (req, res) => {
 export const verifyOtp = tryCatch(async (req, res) => {
   const { email, otp } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({
-      message: "Please provide all details",
-    });
-  }
-
   const otpKey = `otp:${email}`;
   const storedOtpString = await redisClient.get(otpKey);
 
-  if (!storedOtpString) {
-    return res.status(400).json({
-      message: "otp expired",
-    });
-  }
-
-  const storedOtp = JSON.parse(storedOtpString);
-
-  if (storedOtp !== otp) {
-    return res.status(400).json({
-      message: "Invalid Otp",
-    });
+  if (!storedOtpString || JSON.parse(storedOtpString) !== otp) {
+    return res.status(400).json({ message: "Invalid Otp" });
   }
 
   await redisClient.del(otpKey);
@@ -261,25 +208,71 @@ export const verifyOtp = tryCatch(async (req, res) => {
   });
 });
 
+/* ================= FORGOT PASSWORD ================= */
+
+export const forgotPassword = tryCatch(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.json({
+      message: "If email exists, reset link has been sent",
+    });
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+
+  await user.save();
+
+  const resetLink = `https://authentication-odcode.onrender.com/reset-password/${resetToken}`;
+
+  await sendMail({
+    email,
+    subject: "Reset Password",
+    html: `<a href="${resetLink}">${resetLink}</a>`,
+  });
+
+  res.json({ message: "Reset link sent" });
+});
+
+/* ================= RESET PASSWORD ================= */
+
+export const resetPassword = tryCatch(async (req, res) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired token" });
+  }
+
+  user.password = await bcrypt.hash(req.body.password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.json({ message: "Password reset successful" });
+});
+
 /* ================= PROFILE ================= */
 
 export const myProfile = tryCatch(async (req, res) => {
-  const user = req.user;
-  const sessionId = req.sessionId;
-
-  const sessionData = await redisClient.get(`session:${sessionId}`);
-  let sessionInfo = null;
-
-  if (sessionData) {
-    const parsedSession = JSON.parse(sessionData);
-    sessionInfo = {
-      sessionId,
-      loginTime: parsedSession.createdAt,
-      lastActivity: parsedSession.lastActivity,
-    };
-  }
-
-  res.json({ user, sessionInfo });
+  res.json({ user: req.user });
 });
 
 /* ================= REFRESH TOKEN ================= */
@@ -287,19 +280,9 @@ export const myProfile = tryCatch(async (req, res) => {
 export const refreshToken = tryCatch(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
-  if (!refreshToken) {
-    return res.status(401).json({
-      message: "Invalid refresh token",
-    });
-  }
-
   const decode = await verifyRefreshToken(refreshToken);
 
   if (!decode) {
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
-    res.clearCookie("csrfToken");
-
     return res.status(401).json({
       message: "Session Expired. Please login",
     });
@@ -307,35 +290,25 @@ export const refreshToken = tryCatch(async (req, res) => {
 
   generateAccessToken(decode.id, decode.sessionId, res);
 
-  res.status(200).json({
-    message: "token refreshed",
-  });
+  res.status(200).json({ message: "token refreshed" });
 });
 
 /* ================= LOGOUT ================= */
 
 export const logutUser = tryCatch(async (req, res) => {
-  const userId = req.user._id;
-
-  await revokeRefershToken(userId);
+  await revokeRefershToken(req.user._id);
 
   res.clearCookie("refreshToken");
   res.clearCookie("accessToken");
   res.clearCookie("csrfToken");
 
-  await redisClient.del(`user:${userId}`);
-
-  res.json({
-    message: "Logged out successfully",
-  });
+  res.json({ message: "Logged out successfully" });
 });
 
 /* ================= CSRF ================= */
 
 export const refreshCSRF = tryCatch(async (req, res) => {
-  const userId = req.user._id;
-
-  const newCSRFToken = await generateCSRFToken(userId, res);
+  const newCSRFToken = await generateCSRFToken(req.user._id, res);
 
   res.json({
     message: "CSRF token refreshed successfully",
@@ -346,7 +319,5 @@ export const refreshCSRF = tryCatch(async (req, res) => {
 /* ================= ADMIN ================= */
 
 export const adminController = tryCatch(async (req, res) => {
-  res.json({
-    message: "Hello admin",
-  });
+  res.json({ message: "Hello admin" });
 });
