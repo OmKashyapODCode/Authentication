@@ -1,162 +1,150 @@
-# 🔐 Authentication & Authorization System (MERN)
+<h1 style="color:#f0f6fc;">🔐 Authentication & Authorization System (MERN)</h1>
 
-## 📌 Overview
-A production-grade authentication and authorization system built using  
-**MongoDB, Express, React, Node.js, Redis** with secure session handling,
+<h2 style="color:#58a6ff;">📌 Overview</h2>
+<p style="line-height:1.6;">
+A production-grade authentication and authorization system built using
+<strong>MongoDB, Express, React, Node.js, Redis</strong> with secure session handling,
 role-based access control, and multiple authentication flows.
+</p>
+<p style="line-height:1.6;">
+Designed with a strong focus on <strong>security, scalability, and real-world authentication patterns</strong>.
+</p>
 
-Designed with a strong focus on **security, scalability, and real-world authentication patterns**.
+<hr />
 
----
+<h3 style="color:#3fb950;">🚀 Live Demo</h3>
+<p>
+<a href="https://authentication-odcode.onrender.com/" target="_blank" style="color:#58a6ff;">
+https://authentication-odcode.onrender.com/
+</a>
+</p>
 
-## 🧱 Tech Stack
+<hr />
 
-### 🎨 Frontend
-- ⚛️ React (State-based UI)
-- 🌐 Axios (Interceptors)
-- 🧭 React Router
+<h2 style="color:#58a6ff;">🧱 Tech Stack</h2>
 
-### 🛠 Backend
-- 🟢 Node.js
-- 🚂 Express.js
-- 🍃 MongoDB (Mongoose)
-- ⚡ Redis (Session & Token Tracking)
+<h3 style="color:#f78166;">🎨 Frontend</h3>
+<ul>
+  <li>⚛️ React (State-based UI)</li>
+  <li>🌐 Axios (Interceptors)</li>
+  <li>🧭 React Router</li>
+</ul>
 
-### 🔒 Security
-- 🔑 JWT (Access + Refresh Tokens)
-- 🧂 bcrypt (Password Hashing)
-- 🛡 CSRF Protection
-- 📲 OTP-based Authentication (2FA)
-- 📧 Email Verification
+<h3 style="color:#f78166;">🛠 Backend</h3>
+<ul>
+  <li>🟢 Node.js</li>
+  <li>🚂 Express.js</li>
+  <li>🍃 MongoDB (Mongoose)</li>
+  <li>⚡ Redis (Session & Token Tracking)</li>
+</ul>
 
----
+<h3 style="color:#f78166;">🔒 Security</h3>
+<ul>
+  <li>🔑 JWT (Access + Refresh Tokens)</li>
+  <li>🧂 bcrypt (Password Hashing)</li>
+  <li>🛡 CSRF Protection</li>
+  <li>📲 OTP-based Authentication (2FA)</li>
+  <li>📧 Email Verification</li>
+</ul>
 
-## ✨ Core Features
+<hr />
 
-### 🔐 Authentication
-- User Registration with Email Verification
-- Email & Password Login
-- OTP-based Login (2FA)
-- Secure Logout
-- Password Reset (Forgot & Reset)
+<h2 style="color:#58a6ff;">✨ Core Features</h2>
 
-### 🧑‍⚖️ Authorization
-- Role-based Access Control (User / Admin)
-- Protected Frontend & Backend Routes
-- Admin-only APIs
+<h3>🔐 Authentication</h3>
+<ul>
+  <li>User Registration with Email Verification</li>
+  <li>Email & Password Login</li>
+  <li>OTP-based Login (2FA)</li>
+  <li>Secure Logout</li>
+  <li>Password Reset (Forgot & Reset)</li>
+</ul>
 
-### 🔁 Token & Session Management
-- ⏱ Access Token — **15 minutes**
-- 🗓 Refresh Token — **7 days**
-- 📌 Single Active Session per User
-- ⚡ Redis-backed Sessions
+<h3>🧑‍⚖️ Authorization</h3>
+<ul>
+  <li>Role-based Access Control (User / Admin)</li>
+  <li>Protected Frontend & Backend Routes</li>
+  <li>Admin-only APIs</li>
+</ul>
 
----
+<h3>🔁 Token & Session Management</h3>
+<ul>
+  <li>⏱ Access Token — <strong>15 minutes</strong></li>
+  <li>🗓 Refresh Token — <strong>7 days</strong></li>
+  <li>📌 Single Active Session per User</li>
+  <li>⚡ Redis-backed Sessions</li>
+</ul>
 
-## 🧪 Backend API Routes
+<hr />
 
-### Auth
-- `POST /register`
-- `POST /verify/:token`
-- `POST /login`
-- `POST /verify` (OTP)
-- `POST /refresh`
-- `POST /logout`
+<h2 style="color:#58a6ff;">🧪 Backend API Routes</h2>
 
-### User
-- `GET /me`
+<ul>
+  <li><code>POST /register</code></li>
+  <li><code>POST /verify/:token</code></li>
+  <li><code>POST /login</code></li>
+  <li><code>POST /verify</code> (OTP)</li>
+  <li><code>POST /refresh</code></li>
+  <li><code>POST /logout</code></li>
+  <li><code>GET /me</code></li>
+  <li><code>GET /admin</code></li>
+  <li><code>POST /forgot-password</code></li>
+  <li><code>POST /reset-password/:token</code></li>
+</ul>
 
-### Admin
-- `GET /admin`
+<hr />
 
-### Password Reset
-- `POST /forgot-password`
-- `POST /reset-password/:token`
-
----
-
-## 🔄 Authentication Flow
-
-### 📝 Registration
-1. User registers with email & password
-2. Password hashed using bcrypt
-3. Verification email sent
-4. Email verified via token
-
-### 🚪 Login
-1. Credentials validated
-2. Access & Refresh tokens generated
-3. Session stored in Redis
-4. Tokens sent via HTTP-only cookies
-
-### ♻️ Token Refresh
-1. Access token expires
-2. Axios interceptor triggers `/refresh`
-3. New access token issued
-4. Session validated via Redis
-
----
-
-## ⚡ Redis Usage
-- Tracks active sessions
-- Ensures single active login per user
-- Invalidates old sessions on re-login
-- Handles logout & token blacklisting
-
----
-
-## 🖥 Frontend Handling
-- Access token stored **in memory**
-- Refresh token stored in **HTTP-only cookies**
-- Axios interceptors handle refresh & auto-logout
-
----
-
-## ⚙️ Environment Variables
-```env
+<h2 style="color:#58a6ff;">⚙️ Environment Variables</h2>
+<pre style="background:#161b22;padding:12px;border-radius:6px;">
 MONGO_URI=
 REDIS_URL=
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 EMAIL_SERVICE_API_KEY=
 CLIENT_URL=
-```
-## 🚀 Future Enhancements
+</pre>
 
-### 🔄 Refresh Token Rotation
-- Implement rotating refresh tokens on every `/refresh` request
-- Invalidate the previous refresh token after issuing a new one
-- Prevents token replay attacks if a refresh token is compromised
-- Improves overall session security in distributed systems
+<hr />
 
----
+<h2 style="color:#58a6ff;">🛠 Local Setup</h2>
 
-### 🔐 User-Managed Two-Factor Authentication (2FA)
-- Allow users to **enable or disable 2FA after login** from account settings
-- 2FA preference stored per user in the database
-- OTP verification required only when 2FA is enabled
-- Balances strong security with user flexibility
+<pre style="background:#161b22;padding:12px;border-radius:6px;">
+git clone &lt;your-repo-url&gt;
+cd Authentication
 
----
+npm install
+cd Backend && npm install
+cd ../Frontend && npm install
 
-### 🔑 OAuth Authentication
-- Support third-party login providers:
-  - Google OAuth
-  - GitHub OAuth
-- Reduces friction during onboarding
-- Delegates identity verification to trusted providers
-- Useful for enterprise and consumer-facing applications
+cd ../Backend
+cp .env.example .env
 
----
+cd ../Frontend
+cp .env.example .env
 
-### 📱 Phone Number Authentication
-- Enable login and registration using phone numbers
-- OTP-based verification via SMS
-- Can be used as:
-  - Primary authentication method
-  - Backup authentication option
-- Enhances accessibility for mobile-first users
-## 👨‍💻 Author
+# Terminal 1
+cd Backend
+npm run dev
 
-**Om**  
-Full-Stack Engineer  
+# Terminal 2
+cd Frontend
+npm start
+</pre>
+
+<hr />
+
+<h2 style="color:#58a6ff;">🚀 Future Enhancements</h2>
+<ul>
+  <li>🔄 Refresh Token Rotation</li>
+  <li>🔐 User-managed 2FA enable/disable</li>
+  <li>🔑 OAuth (Google, GitHub)</li>
+  <li>📱 Phone number authentication with OTP</li>
+</ul>
+
+<hr />
+
+<h2 style="color:#58a6ff;">👨‍💻 Author</h2>
+<p>
+<strong>Om</strong><br />
+Full-Stack Engineer
+</p>
