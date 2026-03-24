@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { redisClient } from "../index.js";
 import { generateCSRFToken, revokeCSRFTOKEN } from "./csrfMiddleware.js";
 import crypto from "crypto";
-import { RefreshToken } from "../models/refreshToken.model.js";
+import { RefreshToken } from "../models/refreshToken.js";
 import { hashToken } from "../utils/hashToken.js";
 
 export const generateToken = async (id, res) => {
