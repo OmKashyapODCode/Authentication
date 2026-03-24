@@ -53,7 +53,10 @@ api.interceptors.response.use(
     const status = error.response?.status;
 
     /* ---------------- PREVENT INFINITE LOOP ---------------- */
-    if (originalRequest?.url?.includes("/refresh")) {
+    if (
+      originalRequest?.url?.includes("/refresh") ||
+      originalRequest?.url?.includes("/refresh-csrf")
+    ) {
       return Promise.reject(error);
     }
 
