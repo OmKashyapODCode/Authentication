@@ -2,6 +2,8 @@ import jwt from "jsonwebtoken";
 import { redisClient } from "../index.js";
 import { generateCSRFToken, revokeCSRFTOKEN } from "./csrfMiddleware.js";
 import crypto from "crypto";
+import { RefreshToken } from "../models/refreshToken.model.js";
+import { hashToken } from "../utils/hashToken.js";
 
 export const generateToken = async (id, res) => {
   const sessionId = crypto.randomBytes(16).toString("hex");
@@ -14,14 +16,12 @@ export const generateToken = async (id, res) => {
     expiresIn: "7d",
   });
 
-  const refreshTokenKey = `refresh_token:${id}`;
   const activeSessionKey = `active_session:${id}`;
   const sessionDataKey = `session:${sessionId}`;
 
   const existingSession = await redisClient.get(activeSessionKey);
   if (existingSession) {
     await redisClient.del(`session:${existingSession}`);
-    await redisClient.del(refreshToken);
   }
 
   const sessionData = {
@@ -31,7 +31,6 @@ export const generateToken = async (id, res) => {
     lastActivity: new Date().toISOString(),
   };
 
-  await redisClient.setEx(refreshTokenKey, 7 * 24 * 60 * 60, refreshToken);
   await redisClient.setEx(
     sessionDataKey,
     7 * 24 * 60 * 60,
@@ -39,6 +38,16 @@ export const generateToken = async (id, res) => {
   );
 
   await redisClient.setEx(activeSessionKey, 7 * 24 * 60 * 60, sessionId);
+
+  const tokenHash = hashToken(refreshToken);
+
+  await RefreshToken.create({
+    user: id,
+    tokenHash,
+    sessionId,
+    issuedAt: new Date(),
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
@@ -63,9 +72,19 @@ export const verifyRefreshToken = async (refreshToken) => {
   try {
     const decode = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
 
-    const storedToken = await redisClient.get(`refresh_token:${decode.id}`);
+    const tokenHash = hashToken(refreshToken);
 
-    if (storedToken !== refreshToken) {
+    const storedToken = await RefreshToken.findOne({
+      user: decode.id,
+      tokenHash,
+    });
+
+    if (!storedToken) {
+      await RefreshToken.deleteMany({ user: decode.id });
+      return null;
+    }
+
+    if (storedToken.revoked || storedToken.expiresAt < new Date()) {
       return null;
     }
 
@@ -92,6 +111,9 @@ export const verifyRefreshToken = async (refreshToken) => {
       JSON.stringify(parsedSessionData)
     );
 
+    storedToken.revoked = true;
+    await storedToken.save();
+
     return decode;
   } catch (error) {
     return null;
@@ -113,12 +135,15 @@ export const generateAccessToken = (id, sessionId, res) => {
 
 export const revokeRefershToken = async (userId) => {
   const activeSessionId = await redisClient.get(`active_session:${userId}`);
-  await redisClient.del(`refresh_token:${userId}`);
+
   await redisClient.del(`active_session:${userId}`);
 
   if (activeSessionId) {
     await redisClient.del(`session:${activeSessionId}`);
   }
+
+  await RefreshToken.updateMany({ user: userId }, { revoked: true });
+
   await revokeCSRFTOKEN(userId);
 };
 

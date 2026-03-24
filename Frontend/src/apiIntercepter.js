@@ -52,7 +52,8 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
-    if (originalRequest?.url?.includes("/refresh") && status === 401) {
+    /* ---------------- PREVENT INFINITE LOOP ---------------- */
+    if (originalRequest?.url?.includes("/refresh")) {
       return Promise.reject(error);
     }
 
@@ -83,10 +84,12 @@ api.interceptors.response.use(
       }
     }
 
-    /* ---------------- FIXED PUBLIC ROUTES ---------------- */
+    /* ---------------- PUBLIC ROUTES ---------------- */
     const isPublicRoute =
       originalRequest.url.includes("/login") ||
       originalRequest.url.includes("/register") ||
+      originalRequest.url.includes("/forgot-password") ||
+      originalRequest.url.includes("/reset-password") ||
       originalRequest.url.includes("/verify");
 
     /* ---------------- ACCESS TOKEN REFRESH ---------------- */
@@ -110,6 +113,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         processQueue(err);
+        window.location.href = "/login";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

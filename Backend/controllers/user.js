@@ -8,13 +8,11 @@ import crypto from "crypto";
 import sendMail from "../config/sendMail.js";
 import { getOtpHtml, getVerifyEmailHtml } from "../config/html.js";
 import {
-  generateAccessToken,
   generateToken,
   revokeRefershToken,
   verifyRefreshToken,
 } from "../config/generateToken.js";
 import { generateCSRFToken } from "../config/csrfMiddleware.js";
-
 
 /* ================= REGISTER ================= */
 
@@ -38,6 +36,7 @@ export const registerUser = tryCatch(async (req, res) => {
 
       firstErrorMessage = allErrors[0]?.message || "Validation Error";
     }
+
     return res.status(400).json({
       message: firstErrorMessage,
       error: allErrors,
@@ -45,7 +44,6 @@ export const registerUser = tryCatch(async (req, res) => {
   }
 
   const { name, email, password } = validation.data;
-
   const role =
     sanitezedBody.role === "admin" &&
     process.env.ALLOW_ADMIN_REGISTER === "true"
@@ -53,7 +51,6 @@ export const registerUser = tryCatch(async (req, res) => {
       : "user";
 
   const rateLimitKey = `register-rate-limit:${req.ip}:${email}`;
-
   if (await redisClient.get(rateLimitKey)) {
     return res.status(429).json({
       message: "Too many requests, try again later",
@@ -61,7 +58,6 @@ export const registerUser = tryCatch(async (req, res) => {
   }
 
   const existingUser = await User.findOne({ email });
-
   if (existingUser) {
     return res.status(400).json({
       message: "User already exists",
@@ -91,7 +87,7 @@ export const registerUser = tryCatch(async (req, res) => {
 
   res.json({
     message:
-      "If your email is valid, a verification like has been sent. it will expire in 5 minutes",
+      "If your email is valid, a verification link has been sent. it will expire in 5 minutes",
   });
 });
 
@@ -161,7 +157,7 @@ export const loginUser = tryCatch(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(400).json({ message: "Invailid credentials" });
+    return res.status(400).json({ message: "Invalid credentials" });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -176,7 +172,7 @@ export const loginUser = tryCatch(async (req, res) => {
 
   res.json({
     message:
-      "If your email is vaid, an otp has been sent. it will be valid for 5 min",
+      "If your email is valid, an otp has been sent. it will be valid for 5 min",
   });
 });
 
@@ -288,7 +284,7 @@ export const refreshToken = tryCatch(async (req, res) => {
     });
   }
 
-  generateAccessToken(decode.id, decode.sessionId, res);
+  await generateToken(decode.id, res);
 
   res.status(200).json({ message: "token refreshed" });
 });
