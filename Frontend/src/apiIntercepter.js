@@ -95,11 +95,19 @@ api.interceptors.response.use(
       originalRequest.url.includes("/reset-password") ||
       originalRequest.url.includes("/verify");
 
+    /* ---------------- CHECK REFRESH TOKEN EXISTS ---------------- */
+    const hasRefreshToken = document.cookie.includes("refreshToken=");
+
+    if (!hasRefreshToken) {
+      return Promise.reject(error);
+    }
+
     /* ---------------- ACCESS TOKEN REFRESH ---------------- */
     if (
       (status === 401 || status === 403) &&
       !originalRequest._retry &&
-      !isPublicRoute
+      !isPublicRoute &&
+      hasRefreshToken
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
