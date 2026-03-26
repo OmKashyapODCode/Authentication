@@ -1,7 +1,9 @@
 import axios from "axios";
-
+// for production
 const server = "https://authentication-odcode.onrender.com/api/v1";
 
+// for development
+// const server = "http://localhost:5000/api/v1";
 /* ---------------- COOKIE HELPER ---------------- */
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;

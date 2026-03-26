@@ -50,7 +50,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
+    //for production, set the origin to your frontend URL
     origin:"https://authentication-odcode.onrender.com",
+
+    //for development, allow localhost:5173 (Vite default)
+    // origin: "http://localhost:5173"
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
